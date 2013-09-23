@@ -33,6 +33,7 @@
 #include "mem/ruby/network/garnet/fixed-pipeline/OutputUnit_d.hh"
 #include "mem/ruby/network/garnet/fixed-pipeline/Router_d.hh"
 #include "mem/ruby/network/garnet/fixed-pipeline/VCallocator_d.hh"
+#include "debug/RubyNetwork.hh"
 
 VCallocator_d::VCallocator_d(Router_d *router)
     : Consumer(router)
@@ -47,6 +48,11 @@ VCallocator_d::VCallocator_d(Router_d *router)
         m_local_arbiter_activity[i] = 0;
         m_global_arbiter_activity[i] = 0;
     }
+    /*
+       Merge RC and VA stage
+       Written by kagami
+    */
+    m_last_wakeup_time = Cycles(0);
 }
 
 void
@@ -112,11 +118,20 @@ VCallocator_d::clear_request_vector()
 void
 VCallocator_d::wakeup()
 {
+    DPRINTF(RubyNetwork, "[Router %d] VCallocator woke up at time: %lld\n",
+            m_router->get_id(), m_router->curCycle());
     arbitrate_invcs(); // First stage of allocation
     arbitrate_outvcs(); // Second stage of allocation
 
     clear_request_vector();
     check_for_wakeup();
+    /*
+       Merge VA and SA stage
+       Written by kagami
+    */
+    if (m_router->get_num_stages() <= 4) {
+      m_router->swarb_exec();
+    }
 }
 
 bool
@@ -163,6 +178,14 @@ VCallocator_d::select_outvc(int inport_iter, int invc_iter)
         outvc_offset++;
         if (outvc_offset >= num_vcs_per_vnet)
             outvc_offset = 0;
+        /*
+           Customize routing table
+           Written by kagami
+        */
+        if (m_input_unit[inport_iter]->get_next_vc(invc_iter) != -1
+            && m_input_unit[inport_iter]->get_next_vc(invc_iter) != outvc_offset)
+          continue;
+
         int outvc = outvc_base + outvc_offset;
         if (m_output_unit[outport]->is_vc_idle(outvc, m_router->curCycle())) {
             m_local_arbiter_activity[vnet]++;
@@ -236,6 +259,10 @@ VCallocator_d::arbitrate_outvcs()
                         m_router->curCycle());
                     m_output_unit[outport_iter]->update_vc(
                         outvc_iter, inport, invc);
+                    DPRINTF(RubyNetwork,
+                        "[Router %d] Grant VA [inport %d (vc %d) => outport %d (vc %d)] at time: %lld\n",
+                        m_router->get_id(), inport, invc, outport_iter, outvc_iter,
+                        m_router->curCycle());
                     m_router->swarb_req();
                     break;
                 }

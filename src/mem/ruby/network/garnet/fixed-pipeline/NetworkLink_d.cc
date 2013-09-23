@@ -30,6 +30,7 @@
 
 #include "mem/ruby/network/garnet/fixed-pipeline/CreditLink_d.hh"
 #include "mem/ruby/network/garnet/fixed-pipeline/NetworkLink_d.hh"
+#include "mem/ruby/network/garnet/fixed-pipeline/InputUnit_d.hh"
 
 NetworkLink_d::NetworkLink_d(const Params *p)
     : ClockedObject(p), Consumer(this)
@@ -68,6 +69,21 @@ NetworkLink_d::wakeup()
 {
     if (link_srcQueue->isReady(curCycle())) {
         flit_d *t_flit = link_srcQueue->getTopFlit();
+        /*
+           Merge LT and RC
+           Written by kagami
+        */
+        InputUnit_d *next_input = dynamic_cast<InputUnit_d *>(link_consumer);
+        if (next_input != NULL) {
+          if (next_input->get_num_stages() <= 2) {
+            t_flit->set_time(curCycle());
+            linkBuffer->insert(t_flit);
+            m_link_utilized++;
+            m_vc_load[t_flit->get_vc()]++;
+            next_input->wakeup();
+            return;
+          }
+        }
         t_flit->set_time(curCycle() + m_latency);
         linkBuffer->insert(t_flit);
         link_consumer->scheduleEventAbsolute(clockEdge(m_latency));

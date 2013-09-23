@@ -41,4 +41,7 @@ class GarnetRouter_d(BasicRouter):
     virt_nets = Param.Int(Parent.number_of_virtual_networks,
                           "number of virtual networks")
 
+    # Set the number of pipeline stages
+    # Written by kagami
+    number_of_pipe_stages = Param.Int(5, "router pipeline stages")
 

@@ -33,6 +33,7 @@
 #include "mem/ruby/network/garnet/fixed-pipeline/OutputUnit_d.hh"
 #include "mem/ruby/network/garnet/fixed-pipeline/Router_d.hh"
 #include "mem/ruby/network/garnet/fixed-pipeline/SWallocator_d.hh"
+#include "debug/RubyNetwork.hh"
 
 SWallocator_d::SWallocator_d(Router_d *router)
     : Consumer(router)
@@ -40,6 +41,12 @@ SWallocator_d::SWallocator_d(Router_d *router)
     m_router = router;
     m_num_vcs = m_router->get_num_vcs();
     m_vc_per_vnet = m_router->get_vc_per_vnet();
+
+    /*
+       Merge VA and SA stages
+       Written by kagami
+    */
+    m_last_wakeup_time = Cycles(0);
 
     m_local_arbiter_activity = 0;
     m_global_arbiter_activity = 0;
@@ -77,12 +84,32 @@ SWallocator_d::init()
 void
 SWallocator_d::wakeup()
 {
+    /*
+       Merge VA and SA stage
+       Written by kagami
+    */
+
+    if (m_router->get_num_stages() <= 4) {
+      // Avoid multiple wakeup() at the same cycle.
+      // NOTE: VCallocator->wakeup() => SWallocator->wakeup()
+      if (m_last_wakeup_time >= m_router->curCycle())
+        return;
+    }
+
+
+    bool sa_done;
+    DPRINTF(RubyNetwork, "[Router %d] SWallocator woke up at time: %lld\n",
+        m_router->get_id(), m_router->curCycle());
+
     arbitrate_inports(); // First stage of allocation
-    arbitrate_outports(); // Second stage of allocation
+    sa_done = arbitrate_outports(); // Second stage of allocation
+
+    if (m_router->get_num_stages() <= 4 && sa_done) {
+      m_last_wakeup_time = m_router->curCycle();
+    }
 
     clear_request_vector();
     check_for_wakeup();
-
 }
 
 void
@@ -152,10 +179,17 @@ SWallocator_d::is_candidate_inport(int inport, int invc)
     return true;
 }
 
-
+/*
+  Merge VA and SA
+  Written by kagami
+*/
+/*
 void
+*/
+bool
 SWallocator_d::arbitrate_outports()
 {
+    bool sa_done = false;
     // Now there are a set of input vc requests for output vcs.
     // Again do round robin arbitration on these requests
     for (int outport = 0; outport < m_num_outports; outport++) {
@@ -182,6 +216,10 @@ SWallocator_d::arbitrate_outports()
                 t_flit->set_vc(outvc);
                 t_flit->set_outport(outport);
                 t_flit->set_time(m_router->curCycle() + Cycles(1));
+                DPRINTF(RubyNetwork,
+                    "[Router %d] Grant SA [inport %d (vc %d) => outport %d (vc %d) at time: %lld\n",
+                    m_router->get_id(), inport, invc, outport, outvc,
+                    m_router->curCycle());
 
                 m_output_unit[outport]->decrement_credit(outvc);
                 m_router->update_sw_winner(inport, t_flit);
@@ -203,16 +241,21 @@ SWallocator_d::arbitrate_outports()
                         m_router->curCycle());
                     m_input_unit[inport]->set_enqueue_time(invc,
                         Cycles(INFINITE_));
+                    DPRINTF(RubyNetwork,
+                        "[Router %d] Release inport %d (vc %d) at time: %lld\n",
+                        m_router->get_id(), inport, invc, m_router->curCycle());
                 } else {
                     // Send a credit back
                     // but do not indicate that the VC is idle
                     m_input_unit[inport]->increment_credit(invc, false,
                         m_router->curCycle());
                 }
-                break; // got a in request for this outport
+                sa_done = true;
+                break; // got only one input request for this outport
             }
         }
     }
+    return sa_done;
 }
 
 void

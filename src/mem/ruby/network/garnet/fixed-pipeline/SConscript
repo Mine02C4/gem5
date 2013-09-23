@@ -36,6 +36,8 @@ if env['PROTOCOL'] == 'None':
 SimObject('GarnetLink_d.py')
 SimObject('GarnetNetwork_d.py')
 SimObject('GarnetRouter_d.py')
+# Written by kagami
+SimObject('RoutingTableEntry.py')
 
 Source('GarnetLink_d.cc')
 Source('GarnetNetwork_d.cc')
@@ -52,3 +54,5 @@ Source('VCallocator_d.cc')
 Source('VirtualChannel_d.cc')
 Source('flitBuffer_d.cc')
 Source('flit_d.cc')
+# Written by kagami
+Source('RoutingTableEntry.cc')

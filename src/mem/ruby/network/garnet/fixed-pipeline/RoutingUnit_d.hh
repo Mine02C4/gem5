@@ -30,6 +30,7 @@
 
 #ifndef __MEM_RUBY_NETWORK_GARNET_FIXED_PIPELINE_ROUTING_UNIT_D_HH__
 #define __MEM_RUBY_NETWORK_GARNET_FIXED_PIPELINE_ROUTING_UNIT_D_HH__
+#include <vector>
 
 #include "mem/ruby/common/Consumer.hh"
 #include "mem/ruby/common/NetDest.hh"
@@ -44,7 +45,11 @@ class RoutingUnit_d
   public:
     RoutingUnit_d(Router_d *router);
     void addRoute(const NetDest& routing_table_entry);
-    int routeCompute(flit_d *t_flit);
+    // Customize routing
+    // Written by kagami
+    int routeCompute(flit_d *t_flit, InputUnit_d *in_unit, int invc);
+    // int routeCompute(flit_d *t_flit);
+
     void addWeight(int link_weight);
     void RC_stage(flit_d *t_flit, InputUnit_d *in_unit, int invc);
 

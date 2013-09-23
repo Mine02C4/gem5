@@ -79,6 +79,30 @@ class flit_d
         m_stage.second = curTime + Cycles(1);
     }
 
+    /*
+       Execute next stage immediately to merge Two stages (ex. VSA stage)
+       Written by kagami
+    */
+    void
+    advance_stage_now(flit_stage t_stage, Cycles curTime)
+    {
+      m_stage.first = t_stage;
+      m_stage.second = curTime;
+    }
+
+    /*
+       Customize routing
+       Written by kagami
+    */
+    void set_dest_router(int dest_router)
+    {
+      m_dest_router = dest_router;
+    }
+    int get_dest_router()
+    {
+      return m_dest_router;
+    }
+
     std::pair<flit_stage, Cycles> get_stage() { return m_stage; }
 
     void set_delay(Cycles delay) { src_delay = delay; }
@@ -109,6 +133,12 @@ class flit_d
     int m_outport;
     Cycles src_delay;
     std::pair<flit_stage, Cycles> m_stage;
+
+    /*
+       Customize routing
+       Written by kagami
+    */
+    int m_dest_router;
 };
 
 inline std::ostream&

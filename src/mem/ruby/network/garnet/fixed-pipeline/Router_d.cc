@@ -39,6 +39,7 @@
 #include "mem/ruby/network/garnet/fixed-pipeline/SWallocator_d.hh"
 #include "mem/ruby/network/garnet/fixed-pipeline/Switch_d.hh"
 #include "mem/ruby/network/garnet/fixed-pipeline/VCallocator_d.hh"
+#include "debug/RubyNetwork.hh"
 
 using namespace std;
 using m5::stl_helpers::deletePointers;
@@ -49,6 +50,12 @@ Router_d::Router_d(const Params *p)
     m_virtual_networks = p->virt_nets;
     m_vc_per_vnet = p->vcs_per_vnet;
     m_num_vcs = m_virtual_networks * m_vc_per_vnet;
+
+    /*
+       Set the number of pipeline stages
+       Written by kagami
+    */
+    m_num_stages = p->number_of_pipe_stages;
 
     m_routing_unit = new RoutingUnit_d(this);
     m_vc_alloc = new VCallocator_d(this);
@@ -126,6 +133,56 @@ Router_d::addOutPort(NetworkLink_d *out_link,
     m_routing_unit->addWeight(link_weight);
 }
 
+/*
+  Customize routing
+  Written by kagami
+*/
+void
+Router_d::addNeighbor(int id, bool is_router)
+{
+  m_neighbor_table.push_back(make_pair(id, is_router));
+}
+
+void
+Router_d::addRoute(RoutingTableEntry *entry)
+{
+  m_routing_table.push_back(entry);
+}
+
+int
+Router_d::find_next_port(int id, bool is_router)
+{
+  for (vector<pair<int, bool> >::const_iterator iter = m_neighbor_table.begin();
+      iter != m_neighbor_table.end();
+      ++iter) {
+    pair<int, bool> entry = safe_cast<pair<int, bool> >(*iter);
+
+    if (entry.first == id && entry.second == is_router) {
+      DPRINTF(RubyNetwork,
+          "[Router %d] find_next_port() = %d: %lld\n",
+          get_id(), iter - m_neighbor_table.begin(), curCycle());
+      return iter - m_neighbor_table.begin();
+    }
+
+  }
+  return -1;
+}
+
+const RoutingTableEntry*
+Router_d::find_next_router(int dest_router, int invc)
+{
+  for (vector<RoutingTableEntry *>::const_iterator iter = m_routing_table.begin();
+      iter != m_routing_table.end(); ++iter) {
+
+    RoutingTableEntry *entry = safe_cast<RoutingTableEntry *>(*iter);
+
+    if (entry->get_dest_router() == dest_router && entry->get_invc() == invc)
+      return entry;
+
+  }
+  return NULL;
+}
+
 void
 Router_d::route_req(flit_d *t_flit, InputUnit_d *in_unit, int invc)
 {
@@ -142,6 +199,19 @@ void
 Router_d::swarb_req()
 {
     m_sw_alloc->scheduleEventAbsolute(clockEdge(Cycles(1)));
+}
+
+
+/*
+  Merge VA and SA stage
+  Written by kagami
+*/
+void
+Router_d::swarb_exec()
+{
+  //if (m_sw_alloc->alreadyScheduled(clockEdge()))
+  //  return;
+  m_sw_alloc->wakeup();
 }
 
 void

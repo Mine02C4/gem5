@@ -102,7 +102,15 @@ OutputUnit_d::set_credit_link(CreditLink_d *credit_link)
 void
 OutputUnit_d::update_vc(int vc, int in_port, int in_vc)
 {
+  /*
+     Merge VC stage and SA stage if pipeline is 4 stages and less
+     Written by kagami
+  */
+  if (m_router->get_num_stages() <= 4) {
+    m_outvc_state[vc]->setState(ACTIVE_, m_router->curCycle());
+  } else {
     m_outvc_state[vc]->setState(ACTIVE_, m_router->curCycle() + Cycles(1));
+  }
     m_outvc_state[vc]->set_inport(in_port);
     m_outvc_state[vc]->set_invc(in_vc);
     m_router->update_incredit(in_port, in_vc,

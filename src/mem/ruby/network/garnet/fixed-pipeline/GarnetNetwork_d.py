@@ -27,12 +27,16 @@
 #
 # Authors: Steve Reinhardt
 #          Brad Beckmann
-
 from m5.params import *
 from BaseGarnetNetwork import BaseGarnetNetwork
 
 class GarnetNetwork_d(BaseGarnetNetwork):
     type = 'GarnetNetwork_d'
     cxx_header = "mem/ruby/network/garnet/fixed-pipeline/GarnetNetwork_d.hh"
-    buffers_per_data_vc = Param.Int(4, "buffers per data virtual channel");
-    buffers_per_ctrl_vc = Param.Int(1, "buffers per ctrl virtual channel");
+    buffers_per_data_vc = Param.Int(5, "buffers per data virtual channel");
+    buffers_per_ctrl_vc = Param.Int(5, "buffers per ctrl virtual channel");
+
+    # Customize routing
+    # Written by kagami
+    use_customize_routing = Param.Bool(False, "use customize routing")
+    routing_table = VectorParam.RoutingTableEntry("Routing Table")

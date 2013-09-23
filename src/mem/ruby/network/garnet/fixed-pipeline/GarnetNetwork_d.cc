@@ -44,6 +44,12 @@
 #include "mem/ruby/network/garnet/fixed-pipeline/Router_d.hh"
 #include "mem/ruby/network/Topology.hh"
 
+/*
+   Customize routing
+   Written by kagami
+*/
+#include "mem/ruby/network/garnet/fixed-pipeline/RoutingTableEntry.hh"
+
 using namespace std;
 using m5::stl_helpers::deletePointers;
 
@@ -52,6 +58,12 @@ GarnetNetwork_d::GarnetNetwork_d(const Params *p)
 {
     m_buffers_per_data_vc = p->buffers_per_data_vc;
     m_buffers_per_ctrl_vc = p->buffers_per_ctrl_vc;
+
+    /*
+       Customize routing
+       Written by kagami
+    */
+    m_use_customize_routing = p->use_customize_routing;
 
     m_vnet_type.resize(m_virtual_networks);
     for (int i = 0; i < m_vnet_type.size(); i++) {
@@ -64,6 +76,21 @@ GarnetNetwork_d::GarnetNetwork_d(const Params *p)
         Router_d* router = safe_cast<Router_d*>(*i);
         m_router_ptr_vector.push_back(router);
     }
+
+    /*
+       Customized routing
+       Written by kagami
+    */
+    if (m_use_customize_routing) {
+      for (vector<RoutingTableEntry *>::const_iterator iter = p->routing_table.begin();
+          iter != p->routing_table.end(); ++iter) {
+        RoutingTableEntry *entry = safe_cast<RoutingTableEntry *>(*iter);
+        int cur = entry->get_cur_router();
+        assert(cur < m_router_ptr_vector.size());
+        m_router_ptr_vector[cur]->addRoute(entry);
+      }
+    }
+    //test_XYrouting();
 }
 
 void
@@ -88,6 +115,19 @@ GarnetNetwork_d::init()
         ni->addNode(m_toNetQueues[i], m_fromNetQueues[i]);
         m_ni_ptr_vector.push_back(ni);
     }
+
+    /*
+       Customize routing
+       Written by kagami
+    */
+
+    // Assign m_nodes * 4 byte to m_hosttable
+    vector<int> temp(m_nodes);
+    m_hosttable.swap(temp);
+
+
+    // false because this isn't a reconfiguration
+    //m_topology_ptr->createLinks(this, false);
     m_topology_ptr->createLinks(this);
 
     // initialize the link's network pointers
@@ -154,6 +194,7 @@ GarnetNetwork_d::makeInLink(NodeID src, SwitchID dest, BasicLink* link,
     assert(src < m_nodes);
 
     GarnetExtLink_d* garnet_link = safe_cast<GarnetExtLink_d*>(link);
+
     NetworkLink_d* net_link = garnet_link->m_network_links[direction];
     CreditLink_d* credit_link = garnet_link->m_credit_links[direction];
 
@@ -162,6 +203,14 @@ GarnetNetwork_d::makeInLink(NodeID src, SwitchID dest, BasicLink* link,
 
     m_router_ptr_vector[dest]->addInPort(net_link, credit_link);
     m_ni_ptr_vector[src]->addOutPort(net_link, credit_link);
+
+    /*
+       Customize routing
+       Written by kagami
+    */
+    vector<int>::iterator host_iter = m_hosttable.begin() + src;
+    int int_dest = static_cast<int>(dest);
+    m_hosttable.insert(host_iter, int_dest);
 }
 
 /*
@@ -180,6 +229,7 @@ GarnetNetwork_d::makeOutLink(SwitchID src, NodeID dest, BasicLink* link,
     assert(m_router_ptr_vector[src] != NULL);
 
     GarnetExtLink_d* garnet_link = safe_cast<GarnetExtLink_d*>(link);
+
     NetworkLink_d* net_link = garnet_link->m_network_links[direction];
     CreditLink_d* credit_link = garnet_link->m_credit_links[direction];
 
@@ -187,8 +237,15 @@ GarnetNetwork_d::makeOutLink(SwitchID src, NodeID dest, BasicLink* link,
     m_creditlink_ptr_vector.push_back(credit_link);
 
     m_router_ptr_vector[src]->addOutPort(net_link, routing_table_entry,
-                                         link->m_weight, credit_link);
+        link->m_weight, 
+        credit_link);
     m_ni_ptr_vector[dest]->addInPort(net_link, credit_link);
+
+    /*
+       Customize routing
+       Written by kagami
+    */
+    m_router_ptr_vector[src]->addNeighbor(dest, false);
 }
 
 /*
@@ -201,6 +258,7 @@ GarnetNetwork_d::makeInternalLink(SwitchID src, SwitchID dest, BasicLink* link,
                                   const NetDest& routing_table_entry)
 {
     GarnetIntLink_d* garnet_link = safe_cast<GarnetIntLink_d*>(link);
+
     NetworkLink_d* net_link = garnet_link->m_network_links[direction];
     CreditLink_d* credit_link = garnet_link->m_credit_links[direction];
 
@@ -209,7 +267,14 @@ GarnetNetwork_d::makeInternalLink(SwitchID src, SwitchID dest, BasicLink* link,
 
     m_router_ptr_vector[dest]->addInPort(net_link, credit_link);
     m_router_ptr_vector[src]->addOutPort(net_link, routing_table_entry,
-                                         link->m_weight, credit_link);
+        link->m_weight, 
+        credit_link);
+
+    /*
+       Customize routing
+       Written by kagami
+    */
+    m_router_ptr_vector[src]->addNeighbor(dest, true);
 }
 
 void
@@ -339,4 +404,47 @@ GarnetNetwork_d::functionalWrite(Packet *pkt)
     }
 
     return num_functional_writes;
+}
+
+#include <cstdlib>
+
+/*
+  Customize routing
+  Written by kagami
+*/
+  void
+GarnetNetwork_d::test_XYrouting()
+{
+  // We assume 2 x 2 Mesh Topology
+  int mesh_rows = 2;
+  int mesh_cols = 2;
+  int mesh_nodes = mesh_rows * mesh_cols;
+
+  for (int cur = 0; cur < mesh_nodes; cur++) {
+    for (int dest = 0; dest < mesh_nodes; dest++) {
+      if (cur == dest)
+        continue;
+
+      int cur_xpos = cur % mesh_cols;
+      int cur_ypos = cur / mesh_rows;
+      int dest_xpos = dest % mesh_cols;
+      int dest_ypos = dest / mesh_rows;
+
+      int x_diff = dest_xpos - cur_xpos;
+      int y_diff = dest_ypos - cur_ypos;
+
+      int next;
+
+      if (x_diff != 0) {
+        next = (cur_xpos + x_diff / abs(x_diff)) + cur_ypos * mesh_cols;
+      } else {
+        next = cur_xpos + (cur_ypos + y_diff / abs(y_diff)) * mesh_cols;
+      }
+
+      for (int vc = 0; vc < m_vcs_per_vnet; vc++) {
+        //				RoutingTableEntry *entry = new RoutingTableEntry(cur, dest, vc, next, vc);
+        //	m_router_ptr_vector[cur]->addRoute(entry);
+      }
+    }
+  }
 }

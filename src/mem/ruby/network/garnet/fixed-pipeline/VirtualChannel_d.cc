@@ -30,13 +30,20 @@
 
 #include "mem/ruby/network/garnet/fixed-pipeline/VirtualChannel_d.hh"
 
-VirtualChannel_d::VirtualChannel_d(int id)
+VirtualChannel_d::VirtualChannel_d(int id, Cycles curTime)
     : m_enqueue_time(INFINITE_)
 {
     m_id = id;
     m_input_buffer = new flitBuffer_d();
     m_vc_state.first = IDLE_;
-    m_vc_state.second = Cycles(0);
+    m_vc_state.second = curTime;
+
+    /*
+       Customize routing
+       Written by kagami
+    */
+    // if set -1, round robin aribitration is used
+    m_next_vc = -1;
 }
 
 VirtualChannel_d::~VirtualChannel_d()
@@ -54,10 +61,23 @@ void
 VirtualChannel_d::grant_vc(int out_vc, Cycles curTime)
 {
     m_output_vc = out_vc;
-    m_vc_state.first = ACTIVE_;
-    m_vc_state.second = curTime + Cycles(1);
     flit_d *t_flit = m_input_buffer->peekTopFlit();
-    t_flit->advance_stage(SA_, curTime);
+
+    m_vc_state.first = ACTIVE_;
+
+    /*
+       Merge VA stage and SA stage
+       Written by kagami
+    */
+    if (m_num_stages <= 4) {
+      // vc->need_stage() executed at SWallocator must return "true"
+      // in the same cycle.
+      m_vc_state.second = curTime;
+      t_flit->advance_stage_now(SA_, curTime);
+    } else {
+      m_vc_state.second = curTime + Cycles(1);
+      t_flit->advance_stage(SA_, curTime);
+    }
 }
 
 bool

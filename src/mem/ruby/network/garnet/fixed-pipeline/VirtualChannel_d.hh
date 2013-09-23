@@ -39,7 +39,7 @@
 class VirtualChannel_d
 {
   public:
-    VirtualChannel_d(int id);
+    VirtualChannel_d(int id, Cycles curTime);
     ~VirtualChannel_d();
 
     bool need_stage(VC_state_type state, flit_stage stage, Cycles curTime);
@@ -75,6 +75,17 @@ class VirtualChannel_d
         m_vc_state.second = curTime + Cycles(1);
     }
 
+    /*
+       Merge RC and VA stage
+       Written by kagami
+    */
+    inline void
+    set_state_now(VC_state_type m_state, Cycles curTime)
+    {
+        m_vc_state.first = m_state;
+        m_vc_state.second = curTime;
+    }
+
     inline flit_d*
     peekTopFlit()
     {
@@ -89,6 +100,25 @@ class VirtualChannel_d
 
     uint32_t functionalWrite(Packet *pkt);
 
+    /*
+       Written by kagami
+    */
+    inline void
+    set_num_stages(int num_stages)
+    {
+      m_num_stages = num_stages;
+    }
+    inline void
+    set_next_vc(int next_vc)
+    {
+      m_next_vc = next_vc;
+    }
+    inline int
+    get_next_vc()
+    {
+      return m_next_vc;
+    }
+
   private:
     int m_id;
     flitBuffer_d *m_input_buffer;
@@ -97,6 +127,12 @@ class VirtualChannel_d
     Cycles m_enqueue_time;
     int m_output_vc;
     int m_credit_count;
+
+    /*
+       Written by kagami
+    */
+    int m_num_stages;
+    int m_next_vc;
 };
 
 #endif // __MEM_RUBY_NETWORK_GARNET_FIXED_PIPELINE_VIRTUAL_CHANNEL_D_HH__

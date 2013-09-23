@@ -61,6 +61,7 @@ class OutVcState_d
     inline void decrement_credit()  { m_credit_count--; }
 
   private:
+    GarnetNetwork_d *m_network_ptr;
     int m_id ;
     Cycles m_time;
     VC_state_type m_vc_state;

@@ -41,6 +41,7 @@
 #include "mem/ruby/network/garnet/fixed-pipeline/flitBuffer_d.hh"
 #include "mem/ruby/network/garnet/NetworkHeader.hh"
 
+#include "debug/RubyNetwork.hh"
 class Router_d;
 
 class OutputUnit_d : public Consumer
@@ -87,6 +88,18 @@ class OutputUnit_d : public Consumer
         m_out_link->scheduleEventAbsolute(m_router->clockEdge(Cycles(1)));
     }
 
+    /*
+       Merge ST and LT stage
+       Written by kagami
+    */
+    inline void
+    insert_flit_nowait(flit_d *t_flit)
+    {
+      m_out_buffer->insert(t_flit);
+      DPRINTF(RubyNetwork, "[Router %d] LT [outport %d] at time: %lld\n",
+          m_router->get_id(), m_id, m_router->curCycle());
+      m_out_link->wakeup();
+    }
     uint32_t functionalWrite(Packet *pkt);
 
   private:

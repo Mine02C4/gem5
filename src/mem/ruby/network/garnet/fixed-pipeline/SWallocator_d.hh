@@ -52,7 +52,8 @@ class SWallocator_d : public Consumer
     int get_vnet (int invc);
     void print(std::ostream& out) const {};
     void arbitrate_inports();
-    void arbitrate_outports();
+    //void arbitrate_outports();
+    bool arbitrate_outports();
     bool is_candidate_inport(int inport, int invc);
 
     inline double
@@ -70,6 +71,11 @@ class SWallocator_d : public Consumer
     int m_num_inports, m_num_outports;
     int m_num_vcs, m_vc_per_vnet;
 
+    /*
+       Merge VA and SA stages
+       Written by kagami
+    */
+    Cycles m_last_wakeup_time;
     double m_local_arbiter_activity, m_global_arbiter_activity;
 
     Router_d *m_router;

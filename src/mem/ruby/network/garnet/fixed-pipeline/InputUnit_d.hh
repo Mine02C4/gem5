@@ -175,6 +175,28 @@ class InputUnit_d : public Consumer
 
     uint32_t functionalWrite(Packet *pkt);
 
+    /*
+       Merge LT and RC
+       Written by kagami
+    */
+    inline int get_num_stages()
+    {
+      return m_router->get_num_stages();
+    }
+
+    /*
+       Customize routing
+       Written by kagami
+    */
+    inline void set_next_vc(int invc, int next_vc)
+    {
+      m_vcs[invc]->set_next_vc(next_vc);
+    }
+    inline int get_next_vc(int invc)
+    {
+      return m_vcs[invc]->get_next_vc();
+    }
+
   private:
     int m_id;
     int m_num_vcs;

@@ -94,6 +94,12 @@ class VCallocator_d : public Consumer
 
     std::vector<InputUnit_d *> m_input_unit;
     std::vector<OutputUnit_d *> m_output_unit;
+
+    /*
+       Merge RC and VA stages
+       Written by kagami
+    */
+    Cycles m_last_wakeup_time;
 };
 
 #endif // __MEM_RUBY_NETWORK_GARNET_FIXED_PIPELINE_VC_ALLOCATOR_D_HH__

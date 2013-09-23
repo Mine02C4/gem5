@@ -71,6 +71,7 @@ NetworkInterface_d::NetworkInterface_d(int id, int virtual_networks,
 
     for (int i = 0; i < m_num_vcs; i++) {
         m_out_vc_state.push_back(new OutVcState_d(i, m_net_ptr));
+        m_out_vc_state[i]->setState(IDLE_, m_net_ptr->curCycle());
     }
 }
 
@@ -173,6 +174,12 @@ NetworkInterface_d::flitisizeMessage(MsgPtr msg_ptr, int vnet)
             m_net_ptr->increment_injected_flits(vnet);
             flit_d *fl = new flit_d(i, vc, vnet, num_flits, new_msg_ptr,
                 m_net_ptr->curCycle());
+            /*
+               Customize routing
+               Written by kagami
+            */
+            int dest_router = m_net_ptr->getDestRouter(destID);
+            fl->set_dest_router(dest_router);
 
             fl->set_delay(m_net_ptr->curCycle() -
                           m_net_ptr->ticksToCycles(msg_ptr->getTime()));
@@ -189,6 +196,7 @@ NetworkInterface_d::flitisizeMessage(MsgPtr msg_ptr, int vnet)
 int
 NetworkInterface_d::calculateVC(int vnet)
 {
+  /*
         for (int i = 0; i < m_vc_per_vnet; i++) {
                 int delta = m_vc_allocator[vnet];
                 m_vc_allocator[vnet]++;
@@ -200,7 +208,11 @@ NetworkInterface_d::calculateVC(int vnet)
                         return ((vnet*m_vc_per_vnet) + delta);
                 }
         }
-        return -1;
+  */
+
+  if (m_out_vc_state[vnet * m_vc_per_vnet]->isInState(IDLE_, m_net_ptr->curCycle()))
+    return vnet * m_vc_per_vnet;
+  return -1;
 }
 
 /*
@@ -216,8 +228,8 @@ NetworkInterface_d::calculateVC(int vnet)
 void
 NetworkInterface_d::wakeup()
 {
-    DPRINTF(RubyNetwork, "m_id: %d woke up at time: %lld",
-            m_id, m_net_ptr->curCycle());
+  //DPRINTF(RubyNetwork, "m_id: %d woke up at time: %lld\n",
+  //        m_id, m_net_ptr->curCycle());
 
     MsgPtr msg_ptr;
 
@@ -265,6 +277,8 @@ NetworkInterface_d::wakeup()
         m_net_ptr->increment_network_latency(network_delay, vnet);
         m_net_ptr->increment_queueing_latency(queueing_delay, vnet);
         delete t_flit;
+        DPRINTF(RubyNetwork, "[NI %d] Flit arrives at time: %lld\n",
+            m_id, m_net_ptr->curCycle());
     }
 
     /****************** Checking for credit link *******/
@@ -298,7 +312,10 @@ NetworkInterface_d::scheduleOutputLink()
         vc++;
         if (vc == m_num_vcs)
             vc = 0;
-
+        /*
+              DPRINTF(RubyNetwork, "[NI %d] (vc %d)  isReady = %d, has_credits = %d  at time: %lld\n",
+              m_id, vc, m_ni_buffers[vc]->isReady(m_net_ptr->curCycle()), m_out_vc_state[vc]->has_credits(), m_net_ptr->curCycle());
+        */
         // model buffer backpressure
         if (m_ni_buffers[vc]->isReady(m_net_ptr->curCycle()) &&
             m_out_vc_state[vc]->has_credits()) {
@@ -331,6 +348,14 @@ NetworkInterface_d::scheduleOutputLink()
             outNetLink->
                 scheduleEventAbsolute(m_net_ptr->clockEdge(Cycles(1)));
 
+            if (t_flit->get_type() == HEAD_ ||
+                t_flit->get_type() == HEAD_TAIL_) {
+              DPRINTF(RubyNetwork, "[NI %d] (vc %d) Header flit(Packet Size = %d) is ready at time: %lld\n",
+                  m_id, vc, t_flit->get_size(), m_net_ptr->curCycle());
+            } else {
+              DPRINTF(RubyNetwork, "[NI %d] (vc %d) Body flit is ready at time: %lld\n",
+                  m_id, vc, m_net_ptr->curCycle());
+            }
             if (t_flit->get_type() == TAIL_ ||
                t_flit->get_type() == HEAD_TAIL_) {
                 m_ni_enqueue_time[vc] = INFINITE_;

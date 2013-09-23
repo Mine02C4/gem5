@@ -77,7 +77,7 @@ class GarnetNetwork_d : public BaseGarnetNetwork
     void reset();
 
     // Methods used by Topology to setup the network
-    void makeOutLink(SwitchID src, NodeID dest, BasicLink* link, 
+    void makeOutLink(SwitchID src, NodeID dest, BasicLink* link,
                      LinkDirection direction,
                      const NetDest& routing_table_entry);
     void makeInLink(NodeID src, SwitchID dest, BasicLink* link,
@@ -86,6 +86,19 @@ class GarnetNetwork_d : public BaseGarnetNetwork
     void makeInternalLink(SwitchID src, SwitchID dest, BasicLink* link,
                           LinkDirection direction,
                           const NetDest& routing_table_entry);
+
+    /*
+       Customize routing
+       Written by kagami
+    */
+    int getDestRouter(int host_id)
+    {
+      return m_hosttable[host_id];
+    }
+    bool use_customize_routing() { return m_use_customize_routing; }
+    void test_XYrouting();
+
+
 
     //! Function for performing a functional write. The return value
     //! indicates the number of messages that were written.
@@ -104,6 +117,13 @@ class GarnetNetwork_d : public BaseGarnetNetwork
     std::vector<NetworkLink_d *> m_link_ptr_vector; // All links in the network
     std::vector<CreditLink_d *> m_creditlink_ptr_vector; // All links in net
     std::vector<NetworkInterface_d *> m_ni_ptr_vector;   // All NI's in Network
+
+    /*
+       Customize routing
+       Written by kagami
+    */
+    std::vector<int> m_hosttable;
+    bool m_use_customize_routing;
 
     int m_buffers_per_data_vc;
     int m_buffers_per_ctrl_vc;

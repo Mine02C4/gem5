@@ -73,11 +73,27 @@ Switch_d::wakeup()
         flit_d *t_flit = m_switch_buffer[inport]->peekTopFlit();
         if (t_flit->is_stage(ST_, m_router->curCycle())) {
             int outport = t_flit->get_outport();
-            t_flit->advance_stage(LT_, m_router->curCycle());
-            t_flit->set_time(m_router->curCycle() + Cycles(1));
 
-            // This will take care of waking up the Network Link
-            m_output_unit[outport]->insert_flit(t_flit);
+            DPRINTF(RubyNetwork, "[Router %d] ST [inport %d => outport %d] at time: %lld\n",
+                m_router->get_id(),
+                inport, outport,
+                m_router->curCycle());
+
+            /*
+               Merge ST and LT stage
+               Written by kagami
+            */
+            if (m_router->get_num_stages() <= 3) {
+              t_flit->advance_stage_now(LT_, m_router->curCycle());
+              t_flit->set_time(m_router->curCycle());
+              // Execute link->wakeup() immediately
+              m_output_unit[outport]->insert_flit_nowait(t_flit);
+            } else {
+              t_flit->advance_stage(LT_, m_router->curCycle());
+              t_flit->set_time(m_router->curCycle() + Cycles(1));
+              // This will take care of waking up the Network Link
+              m_output_unit[outport]->insert_flit(t_flit);
+            }
             m_switch_buffer[inport]->getTopFlit();
             m_crossbar_activity++;
         }

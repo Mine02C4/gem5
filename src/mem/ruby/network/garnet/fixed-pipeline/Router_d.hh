@@ -33,6 +33,11 @@
 
 #include <iostream>
 #include <vector>
+/*
+  Written by kagami
+*/
+#include <utility>
+#include "mem/ruby/network/garnet/fixed-pipeline/RoutingTableEntry.hh"
 
 #include "mem/ruby/common/NetDest.hh"
 #include "mem/ruby/network/BasicRouter.hh"
@@ -64,6 +69,15 @@ class Router_d : public BasicRouter
     void addInPort(NetworkLink_d *link, CreditLink_d *credit_link);
     void addOutPort(NetworkLink_d *link, const NetDest& routing_table_entry,
                     int link_weight, CreditLink_d *credit_link);
+    /*
+       Customize routing
+       Written by kagami
+    */
+    void addNeighbor(int id, bool is_router);
+    void addRoute(RoutingTableEntry *entry);
+    int find_next_port(int id, bool is_router);
+    const RoutingTableEntry* find_next_router(int dest_router, int invc);
+    bool use_customize_routing() { return m_network_ptr->use_customize_routing(); }
 
     int get_num_vcs()       { return m_num_vcs; }
     int get_num_vnets()     { return m_virtual_networks; }
@@ -72,6 +86,10 @@ class Router_d : public BasicRouter
     int get_num_outports()  { return m_output_unit.size(); }
     int get_id()            { return m_id; }
 
+    /*
+       Written by kagami
+    */
+    int get_num_stages() { return m_num_stages;}
     void init_net_ptr(GarnetNetwork_d* net_ptr) 
     { 
         m_network_ptr = net_ptr; 
@@ -86,6 +104,12 @@ class Router_d : public BasicRouter
     void route_req(flit_d *t_flit, InputUnit_d* in_unit, int invc);
     void vcarb_req();
     void swarb_req();
+
+    /*
+       Execute SA stage to merge VA stage and SA stage
+       Written by kagami
+    */
+    void swarb_exec();
     void printFaultVector(std::ostream& out);
     void printAggregateFaultProbability(std::ostream& out);
 
@@ -110,6 +134,10 @@ class Router_d : public BasicRouter
   private:
     int m_virtual_networks, m_num_vcs, m_vc_per_vnet;
     GarnetNetwork_d *m_network_ptr;
+
+    int m_num_stages;
+    std::vector<std::pair<int, bool> >  m_neighbor_table;
+    std::vector<RoutingTableEntry *> m_routing_table;
 
     std::vector<double> buf_read_count;
     std::vector<double> buf_write_count;
