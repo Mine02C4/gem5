@@ -414,7 +414,7 @@ GarnetNetwork_d::functionalWrite(Packet *pkt)
 */
   void
 GarnetNetwork_d::test_XYrouting()
-{
+{/*
   // We assume 2 x 2 Mesh Topology
   int mesh_rows = 2;
   int mesh_cols = 2;
@@ -446,5 +446,5 @@ GarnetNetwork_d::test_XYrouting()
         //	m_router_ptr_vector[cur]->addRoute(entry);
       }
     }
-  }
+  }*/
 }
