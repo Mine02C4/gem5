@@ -211,6 +211,7 @@ GarnetNetwork_d::makeInLink(NodeID src, SwitchID dest, BasicLink* link,
     vector<int>::iterator host_iter = m_hosttable.begin() + src;
     int int_dest = static_cast<int>(dest);
     m_hosttable.insert(host_iter, int_dest);
+    //m_src_list[src] = dest;
 }
 
 /*

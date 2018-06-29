@@ -56,6 +56,16 @@ class BaseGarnetNetwork : public Network
     void increment_injected_flits(int vnet) { m_flits_injected[vnet]++; }
     void increment_received_flits(int vnet) { m_flits_received[vnet]++; }
 
+    void increment_injected_flits_route(int src, int dst) {
+      auto p = std::make_pair(src, dst);
+      auto itr = m_flits_injected_route.find(p);
+      if (itr != m_flits_injected_route.end()) {
+        m_flits_injected_route[p]++;
+      } else {
+        m_flits_injected_route[p] = 1;
+      }
+    }
+
     void
     increment_network_latency(Cycles latency, int vnet)
     {
@@ -93,6 +103,7 @@ class BaseGarnetNetwork : public Network
 
     std::vector<int> m_flits_received;
     std::vector<int> m_flits_injected;
+    std::map<std::pair<int, int>, int> m_flits_injected_route;
     std::vector<double> m_network_latency;
     std::vector<double> m_queueing_latency;
 

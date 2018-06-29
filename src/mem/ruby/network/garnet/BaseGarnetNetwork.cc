@@ -145,6 +145,14 @@ BaseGarnetNetwork::printPerformanceStats(ostream& out) const
     int total_network_latency = 0.0;
     int total_queueing_latency = 0.0;
 
+    for (auto itr = m_flits_injected_route.begin(); itr != m_flits_injected_route.end(); itr++) {
+      int src = itr->first.first;
+      int dst = itr->first.second;
+      int count= itr->second;
+      out << "Route [destID: " << src << ", dst: " << dst << "]: flits injected = " << count << endl;
+    }
+
+
     for (int i = 0; i < m_virtual_networks; i++) {
         if (!m_in_use[i])
             continue;

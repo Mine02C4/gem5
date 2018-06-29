@@ -53,7 +53,7 @@ class BasicRouter : public ClockedObject
     //
     // ID in relation to other routers in the system
     //
-    uint32_t m_id;
+    uint32_t m_id; // TODO: get this id
 };
 
 inline std::ostream&

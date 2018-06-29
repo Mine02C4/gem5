@@ -63,6 +63,7 @@ GarnetExtLink_d::GarnetExtLink_d(const Params *p)
     m_credit_links[0] = p->credit_links[0];
     m_network_links[1] = p->network_links[1];
     m_credit_links[1] = p->credit_links[1];
+    routerId = p->router_id;
 }
 
 void

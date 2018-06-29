@@ -179,6 +179,7 @@ NetworkInterface_d::flitisizeMessage(MsgPtr msg_ptr, int vnet)
                Written by kagami
             */
             int dest_router = m_net_ptr->getDestRouter(destID);
+            m_net_ptr->increment_injected_flits_route(destID, dest_router);
             fl->set_dest_router(dest_router);
 
             fl->set_delay(m_net_ptr->curCycle() -
