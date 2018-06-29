@@ -202,7 +202,7 @@ GarnetNetwork_d::makeInLink(NodeID src, SwitchID dest, BasicLink* link,
     m_creditlink_ptr_vector.push_back(credit_link);
 
     m_router_ptr_vector[dest]->addInPort(net_link, credit_link);
-    m_ni_ptr_vector[src]->addOutPort(net_link, credit_link);
+    m_ni_ptr_vector[src]->addOutPort(net_link, credit_link, 100); // TODO
 
     /*
        Customize routing

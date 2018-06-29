@@ -95,7 +95,7 @@ NetworkInterface_d::addInPort(NetworkLink_d *in_link,
 
 void
 NetworkInterface_d::addOutPort(NetworkLink_d *out_link,
-                               CreditLink_d *credit_link)
+                               CreditLink_d *credit_link, int router_id)
 {
     m_credit_link = credit_link;
     credit_link->setLinkConsumer(this);
@@ -103,6 +103,7 @@ NetworkInterface_d::addOutPort(NetworkLink_d *out_link,
     outNetLink = out_link;
     outSrcQueue = new flitBuffer_d();
     out_link->setSourceQueue(outSrcQueue);
+    router_id_ = router_id;
 }
 
 void
@@ -179,7 +180,7 @@ NetworkInterface_d::flitisizeMessage(MsgPtr msg_ptr, int vnet)
                Written by kagami
             */
             int dest_router = m_net_ptr->getDestRouter(destID);
-            m_net_ptr->increment_injected_flits_route(destID, dest_router);
+            m_net_ptr->increment_injected_flits_route(router_id_, dest_router);
             fl->set_dest_router(dest_router);
 
             fl->set_delay(m_net_ptr->curCycle() -

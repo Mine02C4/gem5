@@ -55,7 +55,7 @@ class NetworkInterface_d : public Consumer
     ~NetworkInterface_d();
 
     void addInPort(NetworkLink_d *in_link, CreditLink_d *credit_link);
-    void addOutPort(NetworkLink_d *out_link, CreditLink_d *credit_link);
+    void addOutPort(NetworkLink_d *out_link, CreditLink_d *credit_link, int router_id);
 
     void wakeup();
     void addNode(std::vector<MessageBuffer *> &inNode,
@@ -68,6 +68,7 @@ class NetworkInterface_d : public Consumer
   private:
     GarnetNetwork_d *m_net_ptr;
     int m_virtual_networks, m_num_vcs, m_vc_per_vnet;
+    int router_id_;
     NodeID m_id;
     std::vector<OutVcState_d *> m_out_vc_state;
     std::vector<int> m_vc_allocator;

@@ -149,7 +149,7 @@ BaseGarnetNetwork::printPerformanceStats(ostream& out) const
       int src = itr->first.first;
       int dst = itr->first.second;
       int count= itr->second;
-      out << "Route [destID: " << src << ", dst: " << dst << "]: flits injected = " << count << endl;
+      out << "Route [src_router_id: " << src << ", dst: " << dst << "]: flits injected = " << count << endl;
     }
 
 
