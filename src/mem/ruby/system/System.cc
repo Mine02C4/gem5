@@ -157,6 +157,12 @@ RubySystem::printStats(ostream& out)
 }
 
 void
+RubySystem::printProfile(ostream& out)
+{
+    m_network_ptr->printProfile(out);
+}
+
+void
 RubySystem::writeCompressedTrace(uint8_t *raw_data, string filename,
                                  uint64 uncompressed_trace_size)
 {
@@ -642,4 +648,5 @@ void
 RubyDumpStatsCallback::process()
 {
     ruby_system->printStats(*os);
+    ruby_system->printProfile(*profile_os);
 }

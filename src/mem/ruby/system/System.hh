@@ -103,6 +103,7 @@ class RubySystem : public ClockedObject
     }
 
     void printStats(std::ostream& out);
+    void printProfile(std::ostream& out);
     void resetStats();
 
     uint64 getInstructionCount(int thread) { return 1; }
@@ -174,6 +175,7 @@ class RubyDumpStatsCallback : public Callback
 {
   private:
     std::ostream *os;
+    std::ostream *profile_os;
     RubySystem *ruby_system;
 
   public:
@@ -183,6 +185,7 @@ class RubyDumpStatsCallback : public Callback
                           RubySystem *system)
     {
         os = simout.create(_stats_filename);
+        profile_os = simout.create("profile.txt");
         ruby_system = system;
     }
 
