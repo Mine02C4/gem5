@@ -91,6 +91,7 @@ class Network : public ClockedObject
     virtual void reset() = 0;
 
     virtual void printStats(std::ostream& out) const = 0;
+    virtual void printProfile(std::ostream& out) const {};
     virtual void clearStats() = 0;
     virtual void print(std::ostream& out) const = 0;
 

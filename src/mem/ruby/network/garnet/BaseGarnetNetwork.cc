@@ -196,6 +196,6 @@ BaseGarnetNetwork::printProfile(ostream& out) const
       int src = itr->first.first;
       int dst = itr->first.second;
       int count= itr->second;
-      out << "," << src << ", " << dst << ", " << count << endl;
+      out << src << ", " << dst << ", " << count << endl;
     }
 }
