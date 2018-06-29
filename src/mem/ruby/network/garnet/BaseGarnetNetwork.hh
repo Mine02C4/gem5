@@ -93,6 +93,7 @@ class BaseGarnetNetwork : public Network
     void clearStats();
     void printStats(std::ostream& out) const;
     void printPerformanceStats(std::ostream& out) const;
+    void printProfile(std::ostream& out) const;
     virtual void printLinkStats(std::ostream& out) const = 0;
     virtual void printPowerStats(std::ostream& out) const = 0;
 

@@ -187,3 +187,15 @@ BaseGarnetNetwork::printPerformanceStats(ostream& out) const
     out << "-------------" << endl;
     out << endl;
 }
+
+void
+BaseGarnetNetwork::printProfile(ostream& out) const
+{
+    out << "src_router_id, dst_router_id, flits" << endl;
+    for (auto itr = m_flits_injected_route.begin(); itr != m_flits_injected_route.end(); itr++) {
+      int src = itr->first.first;
+      int dst = itr->first.second;
+      int count= itr->second;
+      out << "," << src << ", " << dst << ", " << count << endl;
+    }
+}
