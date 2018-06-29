@@ -123,7 +123,6 @@ class GarnetNetwork_d : public BaseGarnetNetwork
        Written by kagami
     */
     std::vector<int> m_hosttable;
-    //std::vector<int> m_src_list;
     bool m_use_customize_routing;
 
     int m_buffers_per_data_vc;

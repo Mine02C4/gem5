@@ -76,7 +76,6 @@ class GarnetExtLink_d : public BasicLink
 
     friend class GarnetNetwork_d;
 
-    int routerId;
   protected:
     NetworkLink_d* m_network_links[2];
     CreditLink_d* m_credit_links[2];

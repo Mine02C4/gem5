@@ -88,4 +88,3 @@ class GarnetExtLink_d(BasicExtLink):
     # Out uni-directional link
     cls.append(CreditLink_d());
     credit_links = VectorParam.CreditLink_d(cls, "backward flow-control links")
-    router_id = Param.Int(100, "connected router id")
