@@ -149,8 +149,9 @@ BaseGarnetNetwork::printPerformanceStats(ostream& out) const
       int src = itr->first.first;
       int dst = itr->first.second;
       int count= itr->second;
-      out << "Route [src_router_id: " << src << ", dst: " << dst << "]: flits injected = " << count << endl;
+      out << "Route [src_router_id: " << src << ", dst_router_id: " << dst << "]: flits injected = " << count << endl;
     }
+    out << endl;
 
 
     for (int i = 0; i < m_virtual_networks; i++) {
