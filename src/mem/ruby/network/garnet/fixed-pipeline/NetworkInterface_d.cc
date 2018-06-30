@@ -132,6 +132,10 @@ NetworkInterface_d::flitisizeMessage(MsgPtr msg_ptr, int vnet)
     // gets all the destinations associated with this message.
     vector<NodeID> dest_nodes = net_msg_dest.getAllDest();
 
+    // count packets
+    int dest = m_net_ptr->getDestRouter(dest_nodes[0]);
+    m_net_ptr->increment_injected_packets_route(router_id_, dest);
+
     // Number of flits is dependent on the link bandwidth available.
     // This is expressed in terms of bytes/cycle or the flit size
     int num_flits = (int) ceil((double) m_net_ptr->MessageSizeType_to_int(

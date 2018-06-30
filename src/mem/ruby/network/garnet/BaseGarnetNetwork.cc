@@ -145,15 +145,6 @@ BaseGarnetNetwork::printPerformanceStats(ostream& out) const
     int total_network_latency = 0.0;
     int total_queueing_latency = 0.0;
 
-    for (auto itr = m_flits_injected_route.begin(); itr != m_flits_injected_route.end(); itr++) {
-      int src = itr->first.first;
-      int dst = itr->first.second;
-      int count= itr->second;
-      out << "Route [src_router_id: " << src << ", dst_router_id: " << dst << "]: flits injected = " << count << endl;
-    }
-    out << endl;
-
-
     for (int i = 0; i < m_virtual_networks; i++) {
         if (!m_in_use[i])
             continue;
@@ -191,11 +182,12 @@ BaseGarnetNetwork::printPerformanceStats(ostream& out) const
 void
 BaseGarnetNetwork::printProfile(ostream& out) const
 {
-    out << "src_router_id, dst_router_id, flits" << endl;
-    for (auto itr = m_flits_injected_route.begin(); itr != m_flits_injected_route.end(); itr++) {
+    out << "src_router_id,dst_router_id,flits,packets" << endl;
+    for (auto itr = m_packets_flits_injected_route.begin(); itr != m_packets_flits_injected_route.end(); itr++) {
       int src = itr->first.first;
       int dst = itr->first.second;
-      int count= itr->second;
-      out << src << ", " << dst << ", " << count << endl;
+      int flits = itr->second.second;
+      int packets = itr->second.first;
+      out << src << "," << dst << "," << flits << "," << packets << endl;
     }
 }
