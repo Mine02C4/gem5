@@ -42,13 +42,13 @@ using m5::stl_helpers::operator<<;
 
 // Helper functions
 AccessTraceForAddress&
-lookupTraceForAddress(Addr addr, AddressMap& record_map)
+lookupTraceForAddress(Addr addr, AddressMap& record_map, const uint32_t& number_of_cores)
 {
     // we create a static default object here that is used to insert
     // since the insertion will create a copy of the object in the
     // process.  Perhaps this is optimizing early, but it doesn't seem
     // like it could hurt.
-    static const AccessTraceForAddress dflt;
+    static const AccessTraceForAddress dflt(number_of_cores);
 
     pair<AddressMap::iterator, bool> r =
         record_map.insert(make_pair(addr, dflt));
@@ -79,7 +79,7 @@ printSorted(ostream& out, int num_of_sequencers, const AddressMap &record_map,
         misses += record->getTotal();
         sorted.push_back(record);
     }
-    sort(sorted.begin(), sorted.end(), AccessTraceForAddress::less_equal);
+    sort(sorted.begin(), sorted.end(), AccessTraceForAddress::less_than);
 
     out << "Total_entries_" << description << ": " << record_map.size()
         << endl;
@@ -88,7 +88,7 @@ printSorted(ostream& out, int num_of_sequencers, const AddressMap &record_map,
     else
         out << "Total_data_misses_" << description << ": " << misses << endl;
 
-    out << "total | load store atomic | user supervisor | sharing | touched-by"
+    out << "desc | percent | addr | total | load store atomic | user supervisor | sharing | touched-by"
         << endl;
 
     Histogram remaining_records(1, 100);
@@ -293,18 +293,18 @@ AddressProfiler::addTraceSample(Addr data_addr, Addr pc_addr,
 
         // record data address trace info
         data_addr = makeLineAddress(data_addr);
-        lookupTraceForAddress(data_addr, m_dataAccessTrace).
+        lookupTraceForAddress(data_addr, m_dataAccessTrace, m_num_of_sequencers).
             update(type, access_mode, id, sharing_miss);
 
         // record macro data address trace info
 
         // 6 for datablock, 4 to make it 16x more coarse
         Addr macro_addr = mbits<Addr>(data_addr, 63, 10);
-        lookupTraceForAddress(macro_addr, m_macroBlockAccessTrace).
+        lookupTraceForAddress(macro_addr, m_macroBlockAccessTrace, m_num_of_sequencers).
             update(type, access_mode, id, sharing_miss);
 
         // record program counter address trace info
-        lookupTraceForAddress(pc_addr, m_programCounterAccessTrace).
+        lookupTraceForAddress(pc_addr, m_programCounterAccessTrace, m_num_of_sequencers).
             update(type, access_mode, id, sharing_miss);
     }
 
@@ -312,7 +312,7 @@ AddressProfiler::addTraceSample(Addr data_addr, Addr pc_addr,
         // This code is used if the address profiler is an
         // all-instructions profiler record program counter address
         // trace info
-        lookupTraceForAddress(pc_addr, m_programCounterAccessTrace).
+        lookupTraceForAddress(pc_addr, m_programCounterAccessTrace, m_num_of_sequencers).
             update(type, access_mode, id, sharing_miss);
     }
 }
@@ -327,6 +327,6 @@ AddressProfiler::profileRetry(Addr data_addr, AccessType type, int count)
         m_retryProfileHistoWrite.add(count);
     }
     if (count > 1) {
-        lookupTraceForAddress(data_addr, m_retryProfileMap).addSample(count);
+        lookupTraceForAddress(data_addr, m_retryProfileMap, m_num_of_sequencers).addSample(count);
     }
 }

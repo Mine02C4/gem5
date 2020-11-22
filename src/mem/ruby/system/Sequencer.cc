@@ -85,6 +85,7 @@ Sequencer::Sequencer(const Params *p)
     assert(m_dataCache_ptr != NULL);
 
     m_runningGarnetStandalone = p->garnet_standalone;
+    m_profileMemoryAccess= p->ruby_system->getProfileMemoryAccess();
 }
 
 Sequencer::~Sequencer()
@@ -715,6 +716,9 @@ Sequencer::issueRequest(PacketPtr pkt, RubyRequestType secondary_type)
                                       RubyAccessMode_Supervisor, pkt,
                                       PrefetchBit_No, proc_id, core_id);
 
+    if (m_profileMemoryAccess) {
+        m_ruby_system->getProfiler()->addAddressTraceSample(*msg.get(), m_version);
+    }
     DPRINTFR(ProtocolTrace, "%15s %3s %10s%20s %6s>%-6s %#x %s\n",
             curTick(), m_version, "Seq", "Begin", "", "",
             printAddress(msg->getPhysicalAddress()),

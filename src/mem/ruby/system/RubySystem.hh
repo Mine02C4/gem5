@@ -68,6 +68,7 @@ class RubySystem : public ClockedObject
     SimpleMemory *getPhysMem() { return m_phys_mem; }
     Cycles getStartCycle() { return m_start_cycle; }
     bool getAccessBackingStore() { return m_access_backing_store; }
+    bool getProfileMemoryAccess() { return m_profile_memory_access; }
 
     // Public Methods
     Profiler*
@@ -76,6 +77,7 @@ class RubySystem : public ClockedObject
         assert(m_profiler != NULL);
         return m_profiler;
     }
+    void writeAddressProfile(std::string filename);
 
     void regStats() override {
         ClockedObject::regStats();
@@ -135,6 +137,7 @@ class RubySystem : public ClockedObject
     static bool m_cooldown_enabled;
     SimpleMemory *m_phys_mem;
     const bool m_access_backing_store;
+    const bool m_profile_memory_access;
 
     //std::vector<Network *> m_networks;
     std::vector<std::unique_ptr<Network>> m_networks;

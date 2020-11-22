@@ -384,3 +384,6 @@ if buildEnv['TARGET_ISA'] == "arm" and not options.bare_metal \
 
 Simulation.setWorkCountOptions(test_sys, options)
 Simulation.run(options, root, test_sys, FutureClass)
+if options.profile_memory_access:
+    address_profile_path = os.path.join(m5.options.outdir, options.address_profile_filename)
+    test_sys.ruby.writeAddressProfile(address_profile_path)

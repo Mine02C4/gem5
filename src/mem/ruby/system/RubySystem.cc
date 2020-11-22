@@ -45,6 +45,8 @@
 
 #include <cstdio>
 #include <list>
+#include <iostream>
+#include <fstream>
 
 #include "base/intmath.hh"
 #include "base/statistics.hh"
@@ -52,6 +54,7 @@
 #include "debug/RubySystem.hh"
 #include "mem/ruby/common/Address.hh"
 #include "mem/ruby/network/Network.hh"
+#include "mem/ruby/profiler/AddressProfiler.hh"
 #include "mem/ruby/system/DMASequencer.hh"
 #include "mem/ruby/system/Sequencer.hh"
 #include "mem/simple_mem.hh"
@@ -73,6 +76,7 @@ bool RubySystem::m_cooldown_enabled = false;
 
 RubySystem::RubySystem(const Params *p)
     : ClockedObject(p), m_access_backing_store(p->access_backing_store),
+      m_profile_memory_access(p->profile_memory_access),
       m_cache_recorder(NULL)
 {
     m_randomization = p->randomization;
@@ -96,6 +100,14 @@ void
 RubySystem::registerNetwork(Network* network_ptr)
 {
     m_networks.emplace_back(network_ptr);
+}
+
+void RubySystem::writeAddressProfile(std::string filename) {
+    std::ofstream ofs(filename);
+    if (!ofs) {
+        fatal("File open error!! inf writeAccessProfile");
+    }
+    m_profiler->getAddressProfiler()->printStats(ofs);
 }
 
 void

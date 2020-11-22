@@ -98,7 +98,8 @@ class AddressProfiler
 
 AccessTraceForAddress& lookupTraceForAddress(Addr addr,
                                              AddressProfiler::AddressMap&
-                                             record_map);
+                                             record_map,
+                                             const uint32_t& number_of_cores);
 
 void printSorted(std::ostream& out, int num_of_sequencers,
                  const AddressProfiler::AddressMap &record_map,

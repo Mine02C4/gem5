@@ -228,6 +228,7 @@ class Sequencer : public RubyPort
     int m_coreId;
 
     bool m_runningGarnetStandalone;
+    bool m_profileMemoryAccess;
 
     //! Histogram for number of outstanding requests per cycle.
     Stats::Histogram m_outstandReqHist;

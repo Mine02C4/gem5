@@ -26,12 +26,16 @@
 
 from m5.params import *
 from m5.proxy import *
+from m5.SimObject import *
 from m5.objects.ClockedObject import ClockedObject
 from m5.objects.SimpleMemory import *
 
 class RubySystem(ClockedObject):
     type = 'RubySystem'
     cxx_header = "mem/ruby/system/RubySystem.hh"
+    cxx_exports = [
+        PyBindMethod("writeAddressProfile"),
+    ]
     randomization = Param.Bool(False,
         "insert random delays on message enqueue times (if True, all message \
          buffers are enforced to have randomization; otherwise, a message \
@@ -46,6 +50,7 @@ class RubySystem(ClockedObject):
 
     access_backing_store = Param.Bool(False, "Use phys_mem as the functional \
         store and only use ruby for timing.")
+    profile_memory_access = Param.Bool(False, "Enable profiling memory access.")
 
     # Profiler related configuration variables
     hot_lines = Param.Bool(False, "")

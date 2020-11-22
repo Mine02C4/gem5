@@ -88,6 +88,11 @@ def define_options(parser):
 
     parser.add_option("--recycle-latency", type="int", default=10,
                       help="Recycle latency for ruby controller input buffers")
+    parser.add_option("--profile-memory-access", action="store_true", default=False,
+                    help="Enable profiling memory access.")
+    parser.add_option("--address-profile-filename", action="store", type="string",
+                    default="address_profile.txt",
+                    help="Specifies address profile output file")
 
     protocol = buildEnv['PROTOCOL']
     exec("from . import %s" % protocol)
@@ -235,6 +240,10 @@ def create_system(options, full_system, system, piobus = None, dma_ports = [],
     ruby.number_of_virtual_networks = ruby.network.number_of_virtual_networks
     ruby._cpu_ports = cpu_sequencers
     ruby.num_of_sequencers = len(cpu_sequencers)
+    if options.profile_memory_access:
+        ruby.profile_memory_access = True
+        ruby.hot_lines = True
+        ruby.all_instructions = True
 
     # Create a backing copy of physical memory in case required
     if options.access_backing_store:

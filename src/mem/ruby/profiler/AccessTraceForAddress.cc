@@ -41,9 +41,9 @@ AccessTraceForAddress::~AccessTraceForAddress()
 void
 AccessTraceForAddress::print(std::ostream& out) const
 {
-    out << m_addr;
-
     if (m_histogram_ptr == NULL) {
+        out << " | [" << std::hex << "0x" << m_addr << std::dec << "]";
+        out << " | ";
         out << " " << m_total;
         out << " | " << m_loads;
         out << " " << m_stores;
@@ -53,6 +53,7 @@ AccessTraceForAddress::print(std::ostream& out) const
         out << " | " << m_sharing;
         out << " | " << m_touched_by.count();
     } else {
+        out << " | [" << std::hex << "0x" << m_addr << std::dec << "]";
         assert(m_total == 0);
         out << " " << (*m_histogram_ptr);
     }
