@@ -492,15 +492,13 @@ Profiler::collateStats()
 void
 Profiler::addAddressTraceSample(const RubyRequest& msg, NodeID id)
 {
-    if (msg.getType() != RubyRequestType_IFETCH) {
-        // Note: The following line should be commented out if you
-        // want to use the special profiling that is part of the GS320
-        // protocol
+    // Note: The following line should be commented out if you
+    // want to use the special profiling that is part of the GS320
+    // protocol
 
-        // NOTE: Unless PROFILE_HOT_LINES is enabled, nothing will be
-        // profiled by the AddressProfiler
-        m_address_profiler_ptr->
-            addTraceSample(msg.getLineAddress(), msg.getProgramCounter(),
-                           msg.getType(), msg.getAccessMode(), id, false);
-    }
+    // NOTE: Unless PROFILE_HOT_LINES is enabled, nothing will be
+    // profiled by the AddressProfiler
+    m_address_profiler_ptr->
+        addTraceSample(msg.getLineAddress(), msg.getProgramCounter(),
+                        msg.getType(), msg.getAccessMode(), id, false);
 }

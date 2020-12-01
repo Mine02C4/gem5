@@ -88,7 +88,7 @@ printSorted(ostream& out, int num_of_sequencers, const AddressMap &record_map,
     else
         out << "Total_data_misses_" << description << ": " << misses << endl;
 
-    out << "desc | percent | addr | total | load store atomic | user supervisor | sharing | touched-by"
+    out << "desc | percent | addr | total | ifetch load store atomic | user supervisor | sharing | touched-by"
         << endl;
 
     Histogram remaining_records(1, 100);

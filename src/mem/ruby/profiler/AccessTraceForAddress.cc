@@ -45,7 +45,8 @@ AccessTraceForAddress::print(std::ostream& out) const
         out << " | [" << std::hex << "0x" << m_addr << std::dec << "]";
         out << " | ";
         out << " " << m_total;
-        out << " | " << m_loads;
+        out << " | " << m_ifetch;
+        out << " " << m_loads;
         out << " " << m_stores;
         out << " " << m_atomics;
         out << " | " << m_user;
@@ -72,8 +73,10 @@ AccessTraceForAddress::update(RubyRequestType type,
         m_loads++;
     } else if (type == RubyRequestType_ST){
         m_stores++;
+    } else if (type == RubyRequestType_IFETCH) {
+        m_ifetch++;
     } else {
-        //  ERROR_MSG("Trying to add invalid access to trace");
+        fatal("Trying to add invalid access to trace");
     }
 
     if (access_mode == RubyAccessMode_User) {

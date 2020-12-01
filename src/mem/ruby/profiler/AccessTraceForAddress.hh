@@ -42,7 +42,7 @@ class AccessTraceForAddress
 {
   public:
     AccessTraceForAddress(const uint32_t& number_of_cores)
-        : m_loads(0), m_stores(0), m_atomics(0), m_total(0), m_user(0),
+        : m_ifetch(0), m_loads(0), m_stores(0), m_atomics(0), m_total(0), m_user(0),
           m_sharing(0), m_touched_by(number_of_cores), m_histogram_ptr(NULL)
     { }
     ~AccessTraceForAddress();
@@ -67,6 +67,7 @@ class AccessTraceForAddress
 
   private:
     Addr m_addr;
+    uint64_t m_ifetch;
     uint64_t m_loads;
     uint64_t m_stores;
     uint64_t m_atomics;
