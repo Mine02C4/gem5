@@ -104,6 +104,9 @@ class Network : public ClockedObject
     virtual uint32_t functionalWrite(Packet *pkt)
     { fatal("Functional write not implemented.\n"); }
 
+    static uint32_t getDataMessageSize()
+    { return m_data_msg_size; }
+
   protected:
     // Private copy constructor and assignment operator
     Network(const Network& obj);

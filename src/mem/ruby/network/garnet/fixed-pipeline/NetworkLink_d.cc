@@ -36,6 +36,7 @@ NetworkLink_d::NetworkLink_d(const Params *p)
     : ClockedObject(p), Consumer(this)
 {
     m_latency = p->link_latency;
+    m_compression_latency = p->compression_latency;
     channel_width = p->channel_width;
     m_id = p->link_id;
     linkBuffer = new flitBuffer_d();
@@ -84,9 +85,18 @@ NetworkLink_d::wakeup()
             return;
           }
         }
-        t_flit->set_time(curCycle() + m_latency);
+        if (t_flit->get_is_compressed()) {
+            printf("m_compression_latency = %lu\n", static_cast<uint64_t>(m_compression_latency));
+            t_flit->set_time(curCycle() + m_latency + m_compression_latency);
+        } else {
+            t_flit->set_time(curCycle() + m_latency);
+        }
         linkBuffer->insert(t_flit);
-        link_consumer->scheduleEventAbsolute(clockEdge(m_latency));
+        if (t_flit->get_is_compressed()) {
+            link_consumer->scheduleEventAbsolute(clockEdge(m_latency + m_compression_latency));
+        } else {
+            link_consumer->scheduleEventAbsolute(clockEdge(m_latency));
+        }
         m_link_utilized++;
         m_vc_load[t_flit->get_vc()]++;
     }
