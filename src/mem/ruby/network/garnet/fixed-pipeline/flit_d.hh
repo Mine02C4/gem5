@@ -103,6 +103,16 @@ class flit_d
       return m_dest_router;
     }
 
+    void set_is_compressed(bool is_compressed)
+    {
+      m_is_compressed = is_compressed;
+    }
+
+    bool get_is_compressed()
+    {
+      return m_is_compressed;
+    }
+
     std::pair<flit_stage, Cycles> get_stage() { return m_stage; }
 
     void set_delay(Cycles delay) { src_delay = delay; }
@@ -139,6 +149,7 @@ class flit_d
        Written by kagami
     */
     int m_dest_router;
+    bool m_is_compressed;
 };
 
 inline std::ostream&

@@ -138,6 +138,9 @@ NetworkInterface_d::flitisizeMessage(MsgPtr msg_ptr, int vnet)
         net_msg_ptr->getMessageSize())/m_net_ptr->getNiFlitSize());
     bool is_control_message = m_net_ptr->MessageSizeType_to_int(net_msg_ptr->getMessageSize()) == m_net_ptr->MessageSizeType_to_int(MessageSizeType_Control);
 
+    auto m_msg_size = m_net_ptr->MessageSizeType_to_int(net_msg_ptr->getMessageSize());
+    bool msg_is_compressed = m_net_ptr->getDataMessageSize() == m_msg_size;
+
     // loop to convert all multicast messages into unicast messages
     for (int ctr = 0; ctr < dest_nodes.size(); ctr++) {
 
@@ -198,6 +201,7 @@ NetworkInterface_d::flitisizeMessage(MsgPtr msg_ptr, int vnet)
 
             fl->set_dest_router(dest_router);
 
+            fl->set_is_compressed(msg_is_compressed);
             fl->set_delay(m_net_ptr->curCycle() -
                           m_net_ptr->ticksToCycles(msg_ptr->getTime()));
             m_ni_buffers[vc]->insert(fl);
