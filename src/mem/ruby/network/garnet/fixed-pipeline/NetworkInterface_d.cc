@@ -136,6 +136,7 @@ NetworkInterface_d::flitisizeMessage(MsgPtr msg_ptr, int vnet)
     // This is expressed in terms of bytes/cycle or the flit size
     int num_flits = (int) ceil((double) m_net_ptr->MessageSizeType_to_int(
         net_msg_ptr->getMessageSize())/m_net_ptr->getNiFlitSize());
+    bool is_control_message = m_net_ptr->MessageSizeType_to_int(net_msg_ptr->getMessageSize()) == m_net_ptr->MessageSizeType_to_int(MessageSizeType_Control);
 
     // loop to convert all multicast messages into unicast messages
     for (int ctr = 0; ctr < dest_nodes.size(); ctr++) {
@@ -181,8 +182,18 @@ NetworkInterface_d::flitisizeMessage(MsgPtr msg_ptr, int vnet)
             */
             int dest_router = m_net_ptr->getDestRouter(destID);
             m_net_ptr->increment_injected_flits_route(router_id_, dest_router);
+            if (is_control_message) {
+                m_net_ptr->increment_injected_control_flits_route(router_id_, dest_router);
+            } else {
+                m_net_ptr->increment_injected_data_flits_route(router_id_, dest_router);
+            }
             if (i == 0) {
                 m_net_ptr->increment_injected_packets_route(router_id_, dest_router);
+                if (is_control_message) {
+                    m_net_ptr->increment_injected_control_packets_route(router_id_, dest_router);
+                } else {
+                    m_net_ptr->increment_injected_data_packets_route(router_id_, dest_router);
+                }
             }
 
             fl->set_dest_router(dest_router);

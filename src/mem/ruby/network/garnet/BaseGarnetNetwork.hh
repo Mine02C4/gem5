@@ -76,6 +76,46 @@ class BaseGarnetNetwork : public Network
       }
     }
 
+    void increment_injected_control_flits_route(int src, int dst) {
+      auto p = std::make_pair(src, dst);
+      auto itr = m_control_packets_flits_injected_route.find(p);
+      if (itr != m_control_packets_flits_injected_route.end()) {
+        m_control_packets_flits_injected_route[p].second++;
+      } else {
+        m_control_packets_flits_injected_route[p] = std::make_pair(0, 1);
+      }
+    }
+
+    void increment_injected_control_packets_route(int src, int dst) {
+      auto p = std::make_pair(src, dst);
+      auto itr = m_control_packets_flits_injected_route.find(p);
+      if (itr != m_control_packets_flits_injected_route.end()) {
+        m_control_packets_flits_injected_route[p].first++;
+      } else {
+        m_control_packets_flits_injected_route[p] = std::make_pair(1, 0);
+      }
+    }
+
+    void increment_injected_data_flits_route(int src, int dst) {
+      auto p = std::make_pair(src, dst);
+      auto itr = m_data_packets_flits_injected_route.find(p);
+      if (itr != m_data_packets_flits_injected_route.end()) {
+        m_data_packets_flits_injected_route[p].second++;
+      } else {
+        m_data_packets_flits_injected_route[p] = std::make_pair(0, 1);
+      }
+    }
+
+    void increment_injected_data_packets_route(int src, int dst) {
+      auto p = std::make_pair(src, dst);
+      auto itr = m_data_packets_flits_injected_route.find(p);
+      if (itr != m_data_packets_flits_injected_route.end()) {
+        m_data_packets_flits_injected_route[p].first++;
+      } else {
+        m_data_packets_flits_injected_route[p] = std::make_pair(1, 0);
+      }
+    }
+
     void
     increment_network_latency(Cycles latency, int vnet)
     {
@@ -115,6 +155,8 @@ class BaseGarnetNetwork : public Network
     std::vector<int> m_flits_received;
     std::vector<int> m_flits_injected;
     std::map<std::pair<int, int>, std::pair<int, int>> m_packets_flits_injected_route;
+    std::map<std::pair<int, int>, std::pair<int, int>> m_control_packets_flits_injected_route;
+    std::map<std::pair<int, int>, std::pair<int, int>> m_data_packets_flits_injected_route;
     std::vector<double> m_network_latency;
     std::vector<double> m_queueing_latency;
 
