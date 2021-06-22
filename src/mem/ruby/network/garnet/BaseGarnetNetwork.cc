@@ -182,8 +182,28 @@ BaseGarnetNetwork::printPerformanceStats(ostream& out) const
 void
 BaseGarnetNetwork::printProfile(ostream& out) const
 {
+    out << "-------------" << endl;
+    out << "All type routers" << endl;
     out << "src_router_id,dst_router_id,flits,packets" << endl;
     for (auto itr = m_packets_flits_injected_route.begin(); itr != m_packets_flits_injected_route.end(); itr++) {
+      int src = itr->first.first;
+      int dst = itr->first.second;
+      int flits = itr->second.second;
+      int packets = itr->second.first;
+      out << src << "," << dst << "," << flits << "," << packets << endl;
+    }
+    out << endl << "Control message routers" << endl;
+    out << "src_router_id,dst_router_id,flits,packets" << endl;
+    for (auto itr = m_control_packets_flits_injected_route.begin(); itr != m_control_packets_flits_injected_route.end(); itr++) {
+      int src = itr->first.first;
+      int dst = itr->first.second;
+      int flits = itr->second.second;
+      int packets = itr->second.first;
+      out << src << "," << dst << "," << flits << "," << packets << endl;
+    }
+    out << endl << "Data message routers" << endl;
+    out << "src_router_id,dst_router_id,flits,packets" << endl;
+    for (auto itr = m_data_packets_flits_injected_route.begin(); itr != m_data_packets_flits_injected_route.end(); itr++) {
       int src = itr->first.first;
       int dst = itr->first.second;
       int flits = itr->second.second;
