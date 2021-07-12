@@ -457,6 +457,7 @@ MessageBuffer::functionalAccess(Packet *pkt, bool is_read)
 
     uint32_t num_functional_accesses = 0;
 
+
     // Check the priority heap and write any messages that may
     // correspond to the address in the packet.
     for (unsigned int i = 0; i < m_prio_heap.size(); ++i) {

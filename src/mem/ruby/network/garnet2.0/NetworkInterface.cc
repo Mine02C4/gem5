@@ -176,6 +176,7 @@ NetworkInterface::wakeup()
 
         if (b->isReady(curTime)) { // Is there a message waiting
             msg_ptr = b->peekMsgPtr();
+
             if (flitisizeMessage(msg_ptr, vnet)) {
                 b->dequeue(curTime);
             }
@@ -345,11 +346,13 @@ NetworkInterface::flitisizeMessage(MsgPtr msg_ptr, int vnet)
                     break;
                 }
             }
+
             net_msg_dest.removeNetDest(personal_dest);
             // removing the destination from the original message to reflect
             // that a message with this particular destination has been
             // flitisized and an output vc is acquired
             net_msg_ptr->getDestination().removeNetDest(personal_dest);
+
         }
 
         // Embed Route into the flits
@@ -376,6 +379,14 @@ NetworkInterface::flitisizeMessage(MsgPtr msg_ptr, int vnet)
             fl->set_src_delay(curCycle() - ticksToCycles(msg_ptr->getTime()));
             niOutVcs[vc].insert(fl);
         }
+
+        /* shikama */
+        printf("TRACE %lu %d %d %d\n",
+        (uint64_t)m_net_ptr->curCycle(),
+        route.src_ni,
+        route.dest_ni,
+        num_flits);
+        /* shikama */
 
         m_ni_out_vcs_enqueue_time[vc] = curCycle();
         outVcState[vc].setState(ACTIVE_, curCycle());

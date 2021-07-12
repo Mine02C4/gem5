@@ -368,6 +368,7 @@ RubyPort::MemSlavePort::recvFunctional(PacketPtr pkt)
     RubyPort *rp M5_VAR_USED = static_cast<RubyPort *>(&owner);
     RubySystem *rs = rp->m_ruby_system;
 
+
     // Check for pio requests and directly send them to the dedicated
     // pio port.
     if (!isPhysMemAddress(pkt->getAddr())) {

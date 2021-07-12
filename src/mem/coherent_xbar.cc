@@ -431,7 +431,10 @@ CoherentXBar::recvTimingReq(PacketPtr pkt, PortID slave_port_id)
 
         slavePorts[rsp_port_id]->schedTimingResp(rsp_pkt, response_time);
     }
-
+    /* shikama */
+//    if(pkt->cmd == MemCmd::ReadReq && success)
+//      printf("Read Request\n");
+    /* shikama */
     return success;
 }
 

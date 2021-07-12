@@ -150,6 +150,7 @@ class GarnetNetwork : public Network
     uint32_t m_buffers_per_data_vc;
     int m_routing_algorithm;
     bool m_enable_fault_model;
+//fstream wo 
 
     // Statistical variables
     Stats::Vector m_packets_received;
